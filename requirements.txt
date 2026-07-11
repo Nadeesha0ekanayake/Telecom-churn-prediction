@@ -1,0 +1,36 @@
+# Curated dependencies for Path a (VS Code local + local MLflow).
+# Human-readable "what we asked for". Exact resolved versions are frozen
+# into requirements-lock.txt after install (reproducibility).
+# Install:  pip install -r requirements.txt
+
+# --- Core data handling ---
+pandas
+numpy
+scipy
+
+# --- Classic ML ---
+scikit-learn
+
+# --- Gradient-boosted trees (the strong models for tabular churn) ---
+xgboost
+lightgbm
+
+# --- Class imbalance handling (SMOTE etc.) ---
+imbalanced-learn
+
+# --- Experiment tracking & model registry ---
+mlflow
+
+# --- Model explainability ---
+shap
+
+# --- Visualisation ---
+matplotlib
+seaborn
+
+# --- Notebooks / interactive dev ---
+jupyter
+ipykernel
+
+# --- Hyperparameter search (used later in the model zoo) ---
+optuna
