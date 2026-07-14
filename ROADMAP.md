@@ -67,7 +67,7 @@ deliberately trying **multiple options at each stage** to understand how things 
 - [x] Project scaffold + dataset downloaded (`data/raw/Telco-Customer-Churn.csv`)
 - [x] Git repo + first commit + pushed to personal GitHub
 - [x] Local venv + dependencies installed + libomp (`docs/00-environment-setup.md`)
-- [ ] Step 1 · Data Loading & Exploration
+- [x] Step 1 · Data Loading & Exploration (`docs/01-data-exploration.md`)
 - [ ] Step 2 · Cleaning & Feature Engineering
 - [ ] Step 3 · Baseline
 - [ ] Step 4–5 · Model zoo
