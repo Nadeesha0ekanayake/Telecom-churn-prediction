@@ -79,3 +79,53 @@ the same UI.
 - Beat **ROC-AUC 0.842** with tree models (RandomForest, XGBoost, LightGBM).
 - Log them to the same experiment → one comparison table / plot across all models.
 - Revisit imbalance handling (`class_weight` / SMOTE) per model.
+
+---
+
+## Appendix · What is MLflow, and who owns it? (background)
+
+A common misconception is that MLflow is an Azure/Microsoft product. It isn't.
+
+**What it is:** an **open-source** (Apache-2.0) platform for the ML lifecycle —
+experiment tracking, model packaging, and deployment. Vendor-neutral; runs anywhere.
+
+**Origin/ownership:**
+- **Created by Databricks** (the Apache Spark company), first released **2018**.
+- **Donated to the Linux Foundation in 2020** → community-governed, not owned by any
+  single cloud. You can use it with zero connection to Databricks (as we do: `pip install
+  mlflow` + a local SQLite file).
+
+**Why the Azure confusion:** several clouds embed the *same* open-source MLflow as a
+managed feature, so people meet it there first:
+
+| Where you meet MLflow | What's actually happening |
+|---|---|
+| **Azure Machine Learning** | Uses MLflow as its native tracking API — Microsoft just *hosts* the OSS tool |
+| **Azure Databricks** | Microsoft-managed Databricks, ships with "Managed MLflow" |
+| **AWS SageMaker** | Also offers managed MLflow |
+| **Databricks (any cloud)** | Managed MLflow is a core feature |
+
+Each vendor runs the server for you; the library and API are identical. Only *who hosts
+the backend* changes.
+
+**Three ways to run it:**
+1. **Local** (this project) — file or SQLite backend, `mlflow ui`, no server/cloud/account.
+2. **Self-hosted server** — `mlflow server` + a DB + artifact store (e.g. S3) for a team.
+3. **Managed** — a cloud (Databricks / Azure ML / SageMaker) hosts it; point at its URI.
+
+**Four components:** Tracking (params/metrics/artifacts) · Models (standard packaging) ·
+Model Registry (versioned named models + stages — needs a DB backend, hence our SQLite) ·
+Projects (reproducible run format).
+
+**Why this matters for our Path α vs β design:** the *only* line that changes between
+local and Databricks is the tracking URI —
+
+```python
+# Path α (now):   local, self-hosted
+mlflow.set_tracking_uri("sqlite:///mlflow.db")
+# Path β (later): company-managed Databricks
+mlflow.set_tracking_uri("databricks")
+```
+
+Same MLflow, same API, same logging code in `src/tracking.py`. That portability is
+exactly *because* MLflow is an open standard, not an Azure-locked tool.
