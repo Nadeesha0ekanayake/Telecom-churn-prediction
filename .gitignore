@@ -16,6 +16,7 @@ env/
 # --- MLflow tracking artifacts (regenerated locally) ---
 mlruns/
 mlartifacts/
+mlflow.db
 
 # --- Generated data & model binaries (keep code, not artifacts) ---
 data/processed/

@@ -69,7 +69,7 @@ deliberately trying **multiple options at each stage** to understand how things 
 - [x] Local venv + dependencies installed + libomp (`docs/00-environment-setup.md`)
 - [x] Step 1 · Data Loading & Exploration (`docs/01-data-exploration.md`)
 - [x] Step 2 · Cleaning & Feature Engineering (`docs/02-cleaning-feature-engineering.md`)
-- [ ] Step 3 · Baseline
+- [x] Step 3 · Baseline + MLflow setup (`docs/03-baseline-model.md`)
 - [ ] Step 4–5 · Model zoo
 - [ ] Step 6 · SHAP interpretation
 - [ ] Step 7 · Business angle

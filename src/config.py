@@ -18,3 +18,10 @@ ID_COL = "customerID"     # unique id, dropped before modelling
 
 # One seed everywhere → reproducible splits and models
 RANDOM_SEED = 42
+
+# --- MLflow (local, Path α / Track T1) ---
+# SQLite backend (not a plain file store) so the Model Registry works later.
+MLFLOW_DB = PROJECT_ROOT / "mlflow.db"
+MLFLOW_TRACKING_URI = f"sqlite:///{MLFLOW_DB}"
+MLARTIFACTS_DIR = PROJECT_ROOT / "mlartifacts"
+MLFLOW_EXPERIMENT = "telecom-churn"
