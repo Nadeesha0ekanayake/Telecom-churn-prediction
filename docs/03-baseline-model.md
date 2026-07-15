@@ -129,3 +129,58 @@ mlflow.set_tracking_uri("databricks")
 
 Same MLflow, same API, same logging code in `src/tracking.py`. That portability is
 exactly *because* MLflow is an open standard, not an Azure-locked tool.
+
+---
+
+## Appendix · Can MLflow do inference? (yes — this is Step S1)
+
+Inference is a core MLflow purpose, not an add-on. It's exactly what our planned
+**Step S1** covers.
+
+**Key idea — a logged model is a self-contained, loadable artifact.** Our
+`mlflow.sklearn.log_model(pipe, ...)` saved the **entire pipeline** (preprocessing *and*
+classifier) with its dependencies and input signature. So inference takes **raw** customer
+rows and preprocesses them internally — no need to re-implement cleaning at serving time.
+
+**Ways MLflow serves predictions:**
+
+1. **Batch / in-process (Python)** — the simplest:
+   ```python
+   import mlflow
+   model = mlflow.pyfunc.load_model("models:/telecom-churn/1")
+   preds = model.predict(new_customers_df)
+   ```
+   `pyfunc` is MLflow's universal wrapper — the same `.predict()` works for sklearn,
+   XGBoost, PyTorch, etc.
+
+2. **Local REST endpoint** — real-time serving, no cloud:
+   ```bash
+   mlflow models serve -m "models:/telecom-churn/1" -p 5001
+   ```
+   POST JSON records, get predictions back — "model as a service" on your laptop.
+
+3. **Batch at scale on Spark** (Databricks / Path β):
+   ```python
+   udf = mlflow.pyfunc.spark_udf(spark, "models:/telecom-churn/Production")
+   scored = big_df.withColumn("churn_pred", udf(*feature_cols))
+   ```
+
+4. **Containerize / managed endpoints** — `mlflow models build-docker`, or deployment
+   plugins to **Databricks Model Serving, SageMaker, Azure ML, or Kubernetes** (S2).
+
+**The Model Registry is the glue.** Reference a model by name + version/stage instead of a
+file path:
+```
+models:/telecom-churn/1            # a specific version
+models:/telecom-churn/Production   # whatever is promoted to Production
+```
+Promote a better model to "Production" and every inference job/endpoint picks it up with
+no code change. (This is why we used a SQLite backend — the registry needs a database.)
+
+**Maps to our roadmap:**
+```
+S1 (MLflow, Path α):  register best model → pyfunc batch scoring + `mlflow models serve` REST
+S2 (Databricks, Path β): same registered model → Databricks Model Serving + Spark UDF batch
+```
+Order note: we do inference *after* Step 4–5 (model zoo) + Step 6 (SHAP), so we register
+the **best** model, not a baseline.
