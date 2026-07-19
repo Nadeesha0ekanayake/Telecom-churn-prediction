@@ -148,21 +148,26 @@ plt.close()
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## S2 · Serving — batch via Spark UDF (the scale-out Databricks pattern)
-# MAGIC Load the best model from MLflow and score a Spark DataFrame in parallel.
-# MAGIC (Returns class labels — the pyfunc contract, same as the local REST endpoint.)
+# MAGIC ## S2 · Serving — batch inference from the MLflow model
+# MAGIC Load the best model from MLflow and score customers. Returns class labels — the
+# MAGIC pyfunc contract, same as the local REST endpoint.
+# MAGIC
+# MAGIC **Runtime note:** `mlflow.pyfunc.spark_udf(spark, model_uri)` is the *scale-out*
+# MAGIC pattern for millions of rows, but it hits a **version-parsing bug on serverless /
+# MAGIC Photon 18.x** (`Invalid version: '18.x-photon-scala2'`). For our test set, in-process
+# MAGIC `pyfunc.predict` is simpler and runs on any runtime, so we use that here. (On a
+# MAGIC classic ML-runtime cluster you could swap in `spark_udf`.)
 
 # COMMAND ----------
 
-from pyspark.sql import functions as F
-
 model_uri = f"runs:/{run_ids[best]}/model"
-predict_udf = mlflow.pyfunc.spark_udf(spark, model_uri, result_type="integer")
+model = mlflow.pyfunc.load_model(model_uri)
 
-sdf = spark.createDataFrame(X_test.reset_index(drop=True))
-scored = sdf.withColumn("churn_pred", predict_udf(F.struct(*[F.col(c) for c in X_test.columns])))
-display(scored.select("tenure", "Contract", "InternetService",
-                      "MonthlyCharges", "churn_pred").limit(12))
+result_df = X_test.reset_index(drop=True).copy()
+result_df["churn_pred"] = model.predict(result_df)
+
+display(spark.createDataFrame(result_df).select(
+    "tenure", "Contract", "InternetService", "MonthlyCharges", "churn_pred").limit(12))
 
 # COMMAND ----------
 
